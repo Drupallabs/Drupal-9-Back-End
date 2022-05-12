@@ -1,0 +1,38 @@
+name: drupal
+recipe: drupal9
+config:
+  webroot: web
+
+services:
+  appserver:
+    webroot: web
+    xdebug: debug
+    config:
+      php: .vscode/php.ini
+
+  search:
+    type: solr:8
+    core: drupal9
+    portforward: true
+    config:
+      dir: web/modules/contrib/search_api_solr/jump-start/solr8/config-set
+
+tooling:
+  xdebug-on:
+    service: appserver
+    description: Enable xdebug for Apache.
+    cmd: rm -f /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini && docker-php-ext-enable xdebug && /etc/init.d/apache2 reload && echo "Xdebug enabled"
+    user: root
+
+  xdebug-off:
+    service: appserver
+    description: Disable xdebug for Apache.
+    cmd: rm -f /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini && /etc/init.d/apache2 reload && echo "Xdebug disabled"
+    user: root
+
+  phpcs:
+    service: appserver
+    cmd: /app/vendor/bin/phpcs
+  phpcbf:
+    service: appserver
+    cmd: /app/vendor/bin/phpcbf
